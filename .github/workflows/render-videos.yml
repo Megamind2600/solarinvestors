@@ -1,0 +1,92 @@
+name: Render Gita shorts
+
+# 701 x ~15 MB videos cannot live in a git repo, so videos are rendered here
+# and published as workflow artifacts and (optionally) as a GitHub Release.
+# Run manually from Actions -> "Render Gita shorts".
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "First verse index (0-based, inclusive)"
+        default: "0"
+      end:
+        description: "Last verse index (exclusive, max 701)"
+        default: "701"
+      chunk:
+        description: "Verses per parallel job (8-40)"
+        default: "25"
+      duration:
+        description: "Seconds per reel (30-90)"
+        default: "45"
+      crf:
+        description: "x264 quality (lower = better/bigger, 18-28)"
+        default: "24"
+      publish:
+        description: "Also attach results to a GitHub Release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.calc.outputs.matrix }}
+    steps:
+      - id: calc
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          a, b, c = int("${{ inputs.start }}"), int("${{ inputs.end }}"), int("${{ inputs.chunk }}")
+          chunks = [{"a": i, "b": min(i + c, b)} for i in range(a, b, c)]
+          print("matrix=" + json.dumps({"include": chunks}))
+          EOF
+
+  render:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Render videos
+        run: python scripts/batch.py --range ${{ matrix.a }}-${{ matrix.b }} --workers 3 --duration ${{ inputs.duration }} --crf ${{ inputs.crf }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gita-shorts-${{ matrix.a }}-${{ matrix.b }}
+          path: videos/**/*.mp4
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    needs: [setup, render]
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Zip chapters
+        run: |
+          mkdir -p release
+          for d in dist/ch*; do
+            ch=$(basename "$d")
+            (cd "$d" && zip -q "../../release/gita-shorts-$ch.zip" *.mp4)
+          done
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="reels-run-${{ github.run_number }}"
+          gh release create "$TAG" release/*.zip \
+            --title "Gita shorts — batch ${{ github.run_number }}" \
+            --notes "Rendered by workflow #${{ github.run_number }} (${{ inputs.start }}-${{ inputs.end }}, ${{ inputs.duration }}s each)."
