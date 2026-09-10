@@ -1,158 +1,84 @@
-# SolarInvestors Marketplace
+# Gita Wisdom Reels 🕉️
 
-A comprehensive two-sided marketplace connecting solar project site owners with investors through SIP-based funding.
+Turns all **701 shlokas** of the Bhagavad Gita (from
+[gitawisdom](https://megamind2600.github.io/gitawisdom/)) into Instagram /
+YouTube-style **vertical shorts (1080×1920, 30 fps)** — an animated *still*,
+not a filmed video: a glowing Sanskrit card drifts over a cosmic backdrop
+while **flashes, sparks, shockwave rings, screen shake and light sweeps fire
+exactly on the beats** of ambient Mahabharata-style music (tanpura drone,
+bansuri flute, tabla keherwa, tingsha bells).
 
-## Features
+Every sound is **synthesized by code in this repo** (see
+`scripts/synth_music.py`), so the soundtrack is license-clean, and the beat
+map the visuals sync to is exact — not post-detected.
 
-- **Role-based Access**: Site owners, investors, and admin dashboards
-- **Project Management**: Submit, track, and manage solar projects
-- **Investment System**: SIP-based investments with 20-year tracking
-- **Payment Integration**: Secure payments via Stripe
-- **Authentication**: Secure login with Replit Auth
-- **Responsive Design**: Mobile-friendly interface
+## Repo layout
 
-## Tech Stack
+```
+data/verses.json          701 verses: Sanskrit, IAST, English meaning (MIT gita/gita dataset)
+assets/fonts/             Tiro Devanagari Sanskrit, merged-latin Marcellus/Mukta/Tiro-Italic (OFL)
+music/tracks|beats/       6 procedurally generated raga tracks + exact beat maps
+scripts/textshape.py      HarfBuzz + FreeType text renderer (proper Devanagari shaping)
+scripts/scene.py          palettes, cosmic backgrounds, the verse "card" layer
+scripts/synth_music.py    tanpura / bansuri / tabla / bells synth -> stereo + beat map
+scripts/render_video.py   frame engine: Ken Burns, embers, rings, flash, shake, sweep
+scripts/batch.py          parallel batch renderer (resumable)
+scripts/build_fonts.py    merges Fontsource latin + latin-ext subsets (OFL)
+.github/workflows/        renders ALL videos on GitHub runners and publishes a Release
+videos/                   local output (gitignored)
+samples/                  a few example reels (committed)
+```
 
-- **Frontend**: React, TypeScript, Tailwind CSS, Wouter
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Payments**: Stripe
-- **Auth**: Replit OpenID Connect
-- **Deployment**: Vercel
+## Render one video locally
 
-## Local Development
-
-1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd solarinvestors
+pip install -r requirements.txt
+python scripts/render_video.py --id 2.47                  # 45 s default
+python scripts/render_video.py --id 18.66 --duration 60 --out /tmp/18_66.mp4
+python scripts/render_video.py --id 2.47 --sheet /tmp/sheet.jpg   # quick visual QA
 ```
 
-2. Install dependencies:
+## Render all 701 (recommended: GitHub Actions)
+
+A git repo cannot hold ~12 GB of MP4s, so the heavy lifting happens on
+GitHub's runners:
+
+1. **Actions → "Render Gita shorts" → Run workflow**
+   (defaults render indices 0–701 in 29 parallel jobs)
+2. When done, videos appear as **artifacts** per chunk, and
+   zipped per chapter in a **Release** ("Reels — batch N").
+
+Or locally/on a server:
+
 ```bash
-npm install
+python scripts/batch.py --range 0-701 --workers 3 --duration 45
 ```
 
-3. Set up environment variables:
-```bash
-# Copy environment variables from your Replit project
-# Required variables:
-# - DATABASE_URL
-# - SESSION_SECRET
-# - REPLIT_DOMAINS
-# - REPL_ID
-# - STRIPE_SECRET_KEY
-# - VITE_STRIPE_PUBLIC_KEY
-```
+Each video is deterministic (seeded by verse id + track), so reruns are
+resumable — existing files are skipped.
 
-4. Push database schema:
-```bash
-npm run db:push
-```
+## How the beat sync works
 
-5. Start development server:
-```bash
-npm run dev
-```
+`synth_music.build_track()` composes a raga melody over a tabla cycle and
+returns, alongside the stereo PCM, the exact onsets and accent strength of
+every bol (`dha ge na ti | na ka dhi na`), every flute-phrase start, and every
+tingsha bell. `render_video.py` turns those into exciters:
 
-## Deployment to Vercel
+| audio event            | visual effect                                              |
+|------------------------|------------------------------------------------------------|
+| sam (strong `dha`)     | flash + 2 % punch-zoom + screen shake + shockwave ring     |
+| medium bols (`dhi`…)   | spark burst + glow swell                                   |
+| flute phrase start     | diagonal golden light sweep across the shloka              |
+| tingsha bell           | big radial flash, ring + ember fountain, longer decay      |
+| every beat             | ember field brightens, background mandala breathes         |
 
-### 1. GitHub Setup
+## Instagram / Shorts specs
 
-1. Create a new repository on GitHub
-2. Push your code:
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/yourusername/solarinvestors.git
-git push -u origin main
-```
+1080×1920 @ 30 fps, H.264 High@4.2 + AAC 160 kbps, `+faststart`, 45 s by
+default (Reels allow 3–90 s). Upload the MP4 straight from the release zip.
 
-### 2. Database Setup
+## Licenses
 
-1. Create a PostgreSQL database on Neon, Supabase, or Railway
-2. Get your database connection URL
-
-### 3. Vercel Deployment
-
-1. Visit [vercel.com](https://vercel.com) and sign up/login
-2. Click "New Project"
-3. Import your GitHub repository
-4. Configure environment variables in Vercel dashboard:
-
-**Required Environment Variables:**
-```
-DATABASE_URL=your_postgresql_connection_string
-SESSION_SECRET=your_session_secret_key
-REPLIT_DOMAINS=your-app.vercel.app
-REPL_ID=your_repl_id
-STRIPE_SECRET_KEY=sk_live_or_test_key
-VITE_STRIPE_PUBLIC_KEY=pk_live_or_test_key
-NODE_ENV=production
-```
-
-5. Deploy the project
-
-### 4. Post-Deployment Setup
-
-1. Run database migrations:
-```bash
-# In Vercel dashboard, go to Functions tab and run:
-npx drizzle-kit push
-```
-
-2. Update REPLIT_DOMAINS with your Vercel URL
-3. Configure Stripe webhook endpoints if needed
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ |
-| `SESSION_SECRET` | Secret for session encryption | ✅ |
-| `REPLIT_DOMAINS` | Allowed domains for auth | ✅ |
-| `REPL_ID` | Replit application ID | ✅ |
-| `STRIPE_SECRET_KEY` | Stripe secret key | ✅ |
-| `VITE_STRIPE_PUBLIC_KEY` | Stripe publishable key | ✅ |
-
-## Project Structure
-
-```
-├── client/src/           # React frontend
-│   ├── components/       # Reusable UI components
-│   ├── pages/           # Page components
-│   ├── hooks/           # Custom React hooks
-│   └── lib/             # Utilities and configurations
-├── server/              # Express backend
-│   ├── index.ts         # Server entry point
-│   ├── routes.ts        # API routes
-│   ├── db.ts           # Database connection
-│   ├── storage.ts      # Data access layer
-│   └── replitAuth.ts   # Authentication setup
-├── shared/              # Shared types and schemas
-│   └── schema.ts        # Database schema
-└── vercel.json         # Vercel configuration
-```
-
-## API Endpoints
-
-- `GET /api/auth/user` - Get current user
-- `GET/POST /api/projects` - Projects CRUD
-- `GET/POST /api/investments` - Investments CRUD
-- `POST /api/create-payment-intent` - Stripe payments
-- `GET /api/login` - Login redirect
-- `GET /api/logout` - Logout
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-MIT License
+- Verse data: [gita/gita](https://github.com/gita/gita) (MIT), translation by Swami Adidevananda.
+- Fonts: SIL Open Font License (Tiro Devanagari Sanskrit, Marcellus, Mukta — via Fontsource).
+- Music & video pipeline code: this repo (MIT); every soundtrack is generated at render time.
