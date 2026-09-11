@@ -21,6 +21,12 @@ on:
       crf:
         description: "x264 quality (lower = better/bigger, 18-28)"
         default: "24"
+      fx:
+        description: "Effect grammar: meditative | cinematic | festive"
+        default: "cinematic"
+      tracks:
+        description: "How many open-licence music beds to fetch (0 = synth only)"
+        default: "140"
       publish:
         description: "Also attach results to a GitHub Release"
         type: boolean
@@ -35,6 +41,25 @@ jobs:
     outputs:
       matrix: ${{ steps.calc.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Restore meditative music library
+        uses: actions/cache@v4
+        with:
+          path: |
+            music/library
+            music/beats
+          key: music-${{ inputs.tracks }}-${{ hashFiles('music/meditative_music.json') }}-v1
+      - name: Fetch + analyse open-licence music
+        run: |
+          pip install -q -r requirements.txt
+          if [ "${{ inputs.tracks }}" != "0" ]; then
+            python scripts/fetch_music.py --target ${{ inputs.tracks }} --min-duration 100 \
+              || echo "::warning::music fetch failed - reels will fall back to the built-in synth beds"
+            python scripts/analyze_music.py --all || echo "::warning::analysis failed"
+          fi
       - id: calc
         run: |
           python3 - <<'EOF' >> "$GITHUB_OUTPUT"
@@ -56,8 +81,17 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - name: Restore meditative music library
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            music/library
+            music/beats
+          key: music-${{ inputs.tracks }}-${{ hashFiles('music/meditative_music.json') }}-v1
       - name: Render videos
-        run: python scripts/batch.py --range ${{ matrix.a }}-${{ matrix.b }} --workers 3 --duration ${{ inputs.duration }} --crf ${{ inputs.crf }}
+        run: python scripts/batch.py --range ${{ matrix.a }}-${{ matrix.b }} --workers 3
+             --duration ${{ inputs.duration }} --crf ${{ inputs.crf }} --fx ${{ inputs.fx }}
+             --audio auto
       - uses: actions/upload-artifact@v4
         with:
           name: gita-shorts-${{ matrix.a }}-${{ matrix.b }}

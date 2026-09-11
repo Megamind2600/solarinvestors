@@ -27,7 +27,7 @@ def out_path(verse: dict, root: Path) -> Path:
 
 
 def render_one(job):
-    verse, root, duration, crf = job
+    verse, root, duration, crf, fx, audio = job
     out = out_path(verse, root)
     if out.exists() and out.stat().st_size > 200_000:
         return (verse["id"], "skip", 0.0)
@@ -35,7 +35,8 @@ def render_one(job):
     t0 = time.time()
     rc = subprocess.run(
         [sys.executable, str(SCRIPTS / "render_video.py"), "--id", verse["id"],
-         "--duration", str(duration), "--crf", str(crf), "--out", str(out)],
+         "--duration", str(duration), "--crf", str(crf), "--fx", fx, "--audio", audio,
+         "--out", str(out)],
         capture_output=True, text=True)
     status = "ok" if rc.returncode == 0 else "FAIL"
     if rc.returncode != 0:
@@ -53,6 +54,8 @@ def main():
     ap.add_argument("--crf", type=int, default=23)
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--out", default=str(VIDEOS))
+    ap.add_argument("--fx", default="cinematic", choices=["meditative", "cinematic", "festive"])
+    ap.add_argument("--audio", default="auto", choices=["auto", "library", "synth"])
     args = ap.parse_args()
 
     verses = load_verses()
@@ -62,8 +65,9 @@ def main():
         a, b = args.range.split("-")
         verses = verses[int(a):int(b)]
     root = Path(args.out)
-    jobs = [(v, root, args.duration, args.crf) for v in verses]
-    print(f"batch: {len(jobs)} videos, {args.workers} workers, {args.duration}s each")
+    jobs = [(v, root, args.duration, args.crf, args.fx, args.audio) for v in verses]
+    print(f"batch: {len(jobs)} videos, {args.workers} workers, {args.duration}s each, "
+          f"fx={args.fx} audio={args.audio}")
     t0 = time.time()
     ok = skip = fail = 0
     with Pool(args.workers) as pool:
