@@ -5,6 +5,16 @@ __pycache__/
 # Rendered shorts are build artifacts (701 x ~15 MB won't fit in git).
 # The GitHub Actions workflow publishes them as release assets — see README.
 videos/*
+
+# Fetched open-licence music + derived analysis/pads: big, and re-downloadable.
+music/library/*
+!music/library/.gitkeep
+music/pads/*
+!music/pads/.gitkeep
+music/incoming/*
+!music/incoming/.gitkeep
+music/beats/lib_*.json
+ATTRIBUTIONS.md
 !videos/.gitkeep
 samples/*.mp4.part
 

@@ -1,0 +1,301 @@
+{
+ "_comment": [
+  "Curation file for the meditative soundtrack library.  Run:",
+  "    python scripts/fetch_music.py --target 240",
+  "It walks the recipes below, keeps only genuinely free-licensed audio",
+  "(CC0 / Public Domain / CC-BY / CC-BY-SA -- never -NC or -ND, because Reels",
+  "are public and sometimes monetised), rejects anything with vocals or that",
+  "is too short to cut a 45 s window from, normalises to 44.1 kHz stereo WAV",
+  "and writes music/library/manifest.json + ATTRIBUTIONS.md.",
+  "Add your own files by dropping them in music/incoming/ (provider 'local').",
+  "Verified 2026-09-10: freesound search+license pages, archive.org",
+  "advancedsearch API and Wikimedia Commons MediaWiki API all respond."
+ ],
+ "filters": {
+  "allow_licenses": [
+   "cc0-1.0",
+   "pd",
+   "pd-old",
+   "pdm",
+   "by-2.0",
+   "by-2.5",
+   "by-3.0",
+   "by-4.0",
+   "by-sa-2.0",
+   "by-sa-2.5",
+   "by-sa-3.0",
+   "by-sa-4.0",
+   "gfdl"
+  ],
+  "deny_license_substrings": [
+   "-nc",
+   "-nd",
+   "noncommercial",
+   "noDerivatives"
+  ],
+  "min_duration": 95,
+  "max_duration": 2400,
+  "deny_words": [
+   "chant",
+   "mantra recitation",
+   "vocal",
+   "voice",
+   "sing",
+   "bhajan",
+   "kirtan",
+   "shloka recitation",
+   "path",
+   "dialogue",
+   "interview",
+   "lecture",
+   "talk",
+   "podcast",
+   "sermon",
+   "prayer",
+   "spoken",
+   "a cappella",
+   "recitative"
+  ],
+  "prefer_words": [
+   "drone",
+   "alap",
+   "aalap",
+   "tanpura",
+   "tambura",
+   "bansuri",
+   "flute",
+   "sitar",
+   "surbahar",
+   "sarod",
+   "esraj",
+   "dilruba",
+   "santoor",
+   "shehnai",
+   "harp",
+   "cello",
+   "bowls",
+   "bells",
+   "chimes",
+   "ambient",
+   "meditation",
+   "meditative",
+   "calm",
+   "peaceful",
+   "slow",
+   "sustained",
+   "reverb",
+   "temple",
+   "river",
+   "forest",
+   "rain"
+  ],
+  "punish_words": [
+   "dark",
+   "horror",
+   "industrial",
+   "noise",
+   "aggressive",
+   "distorted",
+   "siren",
+   "drum n bass",
+   "trap",
+   "edm",
+   "glitch",
+   "lofi beat",
+   "vinyl crackle"
+  ]
+ },
+ "recipes": [
+  {
+   "name": "pinned-verified",
+   "provider": "freesound",
+   "queries": [],
+   "target": 12,
+   "tags": [
+    "tanpura",
+    "drone",
+    "bells",
+    "nature",
+    "verified"
+   ],
+   "mood": "grounding",
+   "note": "hand-checked CC0 recordings (licence read from each sound page)",
+   "pinned": [
+    {
+     "sid": 153262,
+     "uid": 1859932,
+     "why": "real tanpura, 2:12, 44.1 kHz, 1.2k downloads"
+    },
+    {
+     "sid": 867566,
+     "uid": 15636277,
+     "why": "tree-tone chimes over a soft drone, 2:05"
+    },
+    {
+     "sid": 863445,
+     "uid": 15636277,
+     "why": "water + airy drone, 2:56"
+    }
+   ]
+  },
+  {
+   "name": "tanpura-drone",
+   "provider": "freesound",
+   "queries": [
+    "tanpura drone",
+    "tambura drone",
+    "tanpura slow",
+    "indian drone raga",
+    "swarabat drone"
+   ],
+   "target": 24,
+   "tags": [
+    "tanpura",
+    "drone",
+    "raga",
+    "sustained"
+   ],
+   "mood": "grounding",
+   "note": "real acoustic tanpura: the bed of every Mahabharata scene",
+   "filters": "license:\"Creative Commons 0\" duration:[100 TO 1200]"
+  },
+  {
+   "name": "bansuri-alap",
+   "provider": "freesound",
+   "queries": [
+    "bansuri",
+    "bamboo flute slow",
+    "indian flute meditation",
+    "flute reverb slow",
+    "bansuri alap"
+   ],
+   "target": 26,
+   "tags": [
+    "bansuri",
+    "flute",
+    "melodic",
+    "krishna"
+   ],
+   "mood": "longing",
+   "note": "Krishna's flute; slow alap phrasing, no rhythm section",
+   "filters": "duration:[95 TO 1200]"
+  },
+  {
+   "name": "sitar-surbahar",
+   "provider": "freesound",
+   "queries": [
+    "sitar alap",
+    "surbahar",
+    "sitar slow raga",
+    "santoor slow",
+    "veena slow"
+   ],
+   "target": 22,
+   "tags": [
+    "sitar",
+    "surbahar",
+    "santoor",
+    "raga"
+   ],
+   "mood": "grave",
+   "note": "plucked-string meditative raga excerpts",
+   "filters": "duration:[95 TO 1200]"
+  },
+  {
+   "name": "temple-bells",
+   "provider": "freesound",
+   "queries": [
+    "singing bowl",
+    "temple bell sustain",
+    "tingsha",
+    "wind chimes soft",
+    "brass gong sustain"
+   ],
+   "target": 20,
+   "tags": [
+    "bells",
+    "bowls",
+    "shimmer",
+    "kurukshetra"
+   ],
+   "mood": "awakened",
+   "note": "long decays make ideal flash/bell exciters",
+   "filters": "duration:[60 TO 1200]"
+  },
+  {
+   "name": "field-ambience",
+   "provider": "freesound",
+   "queries": [
+    "forest dawn ambience",
+    "river slow flow",
+    "rain on leaves calm",
+    "night crickets gentle",
+    "mountain wind soft"
+   ],
+   "target": 18,
+   "tags": [
+    "nature",
+    "ambience",
+    "kurukshetra",
+    "himalaya"
+   ],
+   "mood": "still",
+   "note": "battlefield-at-dawn air beds; layer under anything",
+   "filters": "license:\"Creative Commons 0\" duration:[180 TO 1800]"
+  },
+  {
+   "name": "cc-music-ambient",
+   "provider": "archive",
+   "queries": [
+    "collection:netlabels AND mediatype:audio AND format:MP3 AND (title:(\"ambient drone\") OR title:(\"meditation music\")) AND licenseurl:(\"http://creativecommons.org/publicdomain/zero/1.0/\")",
+    "collection:netlabels AND mediatype:audio AND (title:(drone) OR subject:(drone)) AND licenseurl:(\"https://creativecommons.org/licenses/by/4.0/\")",
+    "collection:netlabels AND mediatype:audio AND (title:(\"new age\") OR subject:(\"new age\")) AND licenseurl:(\"http://creativecommons.org/licenses/by-sa/3.0/\")",
+    "collection:(audio_music) AND mediatype:audio AND (title:(\"raga instrumental\") OR title:(\"classical guitar instrumental\")) AND licenseurl:(\"http://creativecommons.org/publicdomain/mark/1.0/\")"
+   ],
+   "target": 70,
+   "tags": [
+    "ambient",
+    "netlabel",
+    "instrumental"
+   ],
+   "mood": "flowing",
+   "note": "netlabel albums: whole CC0/CC-BY instrumental releases, one file per track",
+   "sort": "downloads desc"
+  },
+  {
+   "name": "commons-classical",
+   "provider": "commons",
+   "queries": [
+    "sitar raga filetype:audio",
+    "bansuri filetype:audio",
+    "harp solo filetype:audio",
+    "cello suite bach filetype:audio",
+    "singing bowl filetype:audio",
+    "piano gymnopedie filetype:audio",
+    "guitar adagio filetype:audio"
+   ],
+   "target": 40,
+   "tags": [
+    "public-domain",
+    "classical",
+    "solo"
+   ],
+   "mood": "timeless",
+   "note": "encyclopedic PD/CC audio; license read from each file's extmetadata",
+   "sort": "relevance"
+  },
+  {
+   "name": "local-incoming",
+   "provider": "local",
+   "queries": [
+    "music/incoming"
+   ],
+   "target": 1000,
+   "tags": [
+    "user-supplied"
+   ],
+   "mood": "any",
+   "note": "anything you drop in music/incoming (keep a LICENSE.txt next to it)"
+  }
+ ]
+}
